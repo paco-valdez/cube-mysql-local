@@ -26,7 +26,8 @@ cube(`Vendors`, {
     id: {
       sql: `vendor_id`,
       type: `number`,
-      primaryKey: true
+      primaryKey: true,
+      shown: true
     },
     name: {
       sql: `name`,

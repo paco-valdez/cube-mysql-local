@@ -3,6 +3,7 @@
 # dependencies
 node_modules/*
 */node_modules
+/node_modules
 /.pnp
 .pnp.js
 
@@ -24,5 +25,5 @@ yarn-debug.log*
 yarn-error.log*
 
 .cubestore
-/postgres-data
+/mysql-data
 .idea/*

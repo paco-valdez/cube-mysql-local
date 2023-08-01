@@ -2,33 +2,44 @@ version: '3.9'
 # If using colima as docker runtime on osx, then set WORKDIR so volume mounts work.
 # WORKDIR=`pwd` docker-compose up
 services:
-  postgres:
-    image: postgres:14.2
-    volumes:
+  mariadb:
+    image: "mariadb:11.0.2"
+    restart: 'always'
+    volumes: 
       - ${PWD}/structure.sql:/docker-entrypoint-initdb.d/structure.sql
-      - ${PWD}/postgres-data/:/var/lib/postgresql/data
+      - ${PWD}/mysql-data/:/var/lib/mysql
+      - ${PWD}/my.cnf:/etc/mysql/conf.d/my.cnf
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-example}
-#    ports:
-#      - 5432:5432
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-transactions}
+      - MYSQL_USER=${MYSQL_USER:-cube}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
+  # postgres:
+  #   image: postgres:14.2
+  #   volumes:
+  #     - ${PWD}/structure.sql:/docker-entrypoint-initdb.d/structure.sql
+  #     - ${PWD}/postgres-data/:/var/lib/postgresql/data
+  #   environment:
+  #     - POSTGRES_USER=${POSTGRES_USER:-postgres}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+  #     - POSTGRES_DB=${POSTGRES_DB:-example}
+
 
   cube_api:
-    image: cubejs/cube:v0.31.62
+    image: cubejs/cube:v0.33.41
     ports:
       - 4000:4000
       - 5432:5432
     environment:
       - CUBEJS_LOG_LEVEL=info
       - DEBUG_LOG=true
-      - CUBEJS_DB_HOST=postgres
-      - CUBEJS_DB_USER=postgres
-      - CUBEJS_DB_NAME=${POSTGRES_DB:-example}
-      - CUBEJS_DB_PASS=${POSTGRES_PASSWORD:-postgres}
-      - CUBEJS_DB_PORT=5432
+      - CUBEJS_DB_HOST=mariadb
+      - CUBEJS_DB_USER=${MYSQL_USER:-cube}
+      - CUBEJS_DB_NAME=${MYSQL_DATABASE:-transactions}
+      - CUBEJS_DB_PASS=${MYSQL_ROOT_PASSWORD:-password}
+      - CUBEJS_DB_PORT=3306
       - CUBEJS_API_SECRET=secret1234
-      - CUBEJS_DB_TYPE=postgres
+      - CUBEJS_DB_TYPE=mysql
       # - CUBEJS_EXTERNAL_DEFAULT=true
       - CUBEJS_SCHEDULED_REFRESH_DEFAULT=true
       - CUBEJS_DEV_MODE=true
@@ -39,4 +50,4 @@ services:
       - ${PWD}:/cube/conf
       - ${PWD}/schema:/cube/schema
     depends_on:
-      - postgres
+      - mariadb
